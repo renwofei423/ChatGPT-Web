@@ -96,7 +96,7 @@ function MessagePage() {
             </Form.Item>
           </Col>
         </Row>
-      </Form>
+            </Form>
             <ProTable
                 actionRef={tableActionRef}
                 columns={columns}

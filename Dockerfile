@@ -1,15 +1,21 @@
-FROM keymetrics/pm2:latest-alpine
+# 使用 Node.js 镜像作为基础镜像
+FROM node:16
 
-# Bundle APP files
-COPY src server/
+# 设置工作目录并拷贝前端相关文件
+WORKDIR .
 COPY package.json .
-COPY pm2.json .
+COPY src/ .
 
-# Install app dependencies
-ENV NPM_CONFIG_LOGLEVEL warn
-RUN npm install --production
+# 安装依赖并构建前端项目
+RUN npm install
+RUN npm run build
 
-# Show current folder structure in logs
-RUN ls -al -R
+# 使用 Nginx 作为静态文件服务器
+FROM nginx:stable-alpine-slim:latest
+COPY --from=0 dist /usr/share/nginx/html
 
-CMD [ "pm2-runtime", "start", "pm2.json" ]
+# 暴露端口 80
+EXPOSE 80
+
+# 启动 Nginx 服务器
+CMD ["nginx", "-g", "daemon off;"]

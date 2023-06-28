@@ -16,14 +16,14 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: my-secret-pw
     volumes:
-      - ./db:/var/lib/mysql
+      - /data/mysql:/var/lib/mysql
     ports:
       - 3306:3306
 
   redis:
-    image: redis
+    image: redis:alpine
     ports:
       - 6379:6379
     volumes:
-      - ./data:/data  # 将 Redis 数据存储到项目目录下的 data 文件夹
+      - /data/redis:/data  # 将 Redis 数据存储到项目目录下的 data 文件夹
     command: redis-server --requirepass my-secret-pw  # 设置 Redis 密码
