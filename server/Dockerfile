@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:16-alpine
 
 # Bundle APP files
 COPY server/ server/
