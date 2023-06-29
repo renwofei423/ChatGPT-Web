@@ -1,7 +1,7 @@
 root = true # 控制配置文件 .editorconfig 是否生效的字段
 ​
 [**] # 匹配全部文件
-indent_style = tab # 缩进风格，可选space｜tab
+indent_style = space # 缩进风格，可选space｜tab
 indent_size = 4 # 缩进的空格数
 charset = utf-8 # 设置字符集
 trim_trailing_whitespace = true # 删除一行中的前后空格
