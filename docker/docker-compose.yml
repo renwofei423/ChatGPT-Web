@@ -1,9 +1,6 @@
-# Use root/example as user/password credentials
-
 version: '3.1'
 
 services:
-
   adminer:
     image: adminer
     restart: always
@@ -11,12 +8,12 @@ services:
       - 8090:8080
 
   db:
-    image: mysql:5.7
+    image: mysql:8
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: my-secret-pw
     volumes:
-      - /data/mysql:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
     ports:
       - 3306:3306
 
@@ -25,8 +22,8 @@ services:
     ports:
       - 6379:6379
     volumes:
-      - /data/redis:/data  # 将 Redis 数据存储到项目目录下的 data 文件夹
-    command: redis-server --requirepass my-secret-pw  # 设置 Redis 密码
+      - redis_data:/data
+    command: redis-server --requirepass my-secret-pw
 
   chatgpt-web:
     image: renwofei423/chatgpt-web:lastest
@@ -40,7 +37,12 @@ services:
     ports:
       - 3200:3200
     volumes:
-      - /data/chatgpt-web-backend/config:/server/config
+      - chatgpt-web-backend_config:/server/config
     depends_on:
         - db
         - redis
+
+volumes:
+  mysql_data: {}
+  redis_data: {}
+  chatgpt-web-backend_config: {}
