@@ -21,9 +21,7 @@
     "preview": "vite preview",
     "eslint": "eslint \"src/**/*.{ts,tsx}\"",
     "eslint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
-    "prepare": "husky install",
-    "build:fontend": "sudo docker build -t renwofei423/chatgpt-web:lastest .",
-    "build:backend": "sudo docker build -t renwofei423/chatgpt-web-backend:lastest -f server/Dockerfile ."
+    "prepare": "husky install"
   },
   "dependencies": {
     "@ant-design/icons": "^5.0.1",
