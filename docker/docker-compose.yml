@@ -26,14 +26,14 @@ services:
     command: redis-server --requirepass my-secret-pw
 
   chatgpt-web:
-    image: renwofei423/chatgpt-web:lastest
+    image: renwofei423/chatgpt-web:latest
     ports:
       - 3000:80
     depends_on:
         - chatgpt-web-backend
 
   chatgpt-web-backend:
-    image: renwofei423/chatgpt-web-backend:lastest
+    image: renwofei423/chatgpt-web-backend:latest
     ports:
       - 3200:3200
     volumes:
