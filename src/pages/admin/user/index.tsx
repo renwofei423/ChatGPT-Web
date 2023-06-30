@@ -151,37 +151,37 @@ function UserPage() {
             </Form.Item>
           </Col>
           <Form.Item label="积分范围" name="scoreRange">
-            <Space.Compact>
-              <Form.Item name={['scoreRange', 'min']} noStyle>
-                <InputNumber
-                  placeholder="min"
-                  min={0}
-                  max={1000000}
-                  style={{ width: '50%' }}
-                />
-              </Form.Item>
-              <Form.Item
-                name={['scoreRange', 'max']}
-                noStyle
-                rules={[
-                  {
-                    validator: (_, value) => {
-                      if (value && value < 0) {
-                        return Promise.reject(new Error('最大积分不能小于0'));
-                      }
-                      return Promise.resolve();
-                    },
+          <Input.Group compact>
+            <Form.Item name={['scoreRange', 'min']} noStyle>
+              <InputNumber
+                placeholder="最小积分"
+                min={0}
+                max={1000000}
+                style={{ width: '50%' }}
+              />
+            </Form.Item>
+            <Form.Item
+              name={['scoreRange', 'max']}
+              noStyle
+              rules={[
+                {
+                  validator: (_, value) => {
+                    if (value && value < 0) {
+                      return Promise.reject(new Error('最大积分不能小于0'));
+                    }
+                    return Promise.resolve();
                   },
-                ]}
-              >
-                <InputNumber
-                  placeholder="max"
-                  min={0}
-                  max={100000000}
-                  style={{ width: '50%' }}
-                />
-              </Form.Item>
-            </Space.Compact>
+                },
+              ]}
+            >
+              <InputNumber
+                placeholder="最大积分"
+                min={0}
+                max={1000000}
+                style={{ width: '50%' }}
+              />
+            </Form.Item>
+          </Input.Group>
           </Form.Item>
           <Col>
             <Form.Item name="createTimeRange" label="用户注册时间">
@@ -233,30 +233,31 @@ function UserPage() {
             page: params.current || 1,
             page_size: params.pageSize || 10
           }
+          console.log('queryParams',queryParams)
           // 表单搜索项会从 params 传入，传递给后端接口。
           const res = await getAdminUsers({
-            page: queryParams.current || 1,
+            page: queryParams.page || 1,
             page_size: queryParams.pageSize || 10,
             account: queryParams.account ?? '',
             scoreMin: queryParams.scoreRange !== undefined ? queryParams.scoreRange.min : 0,
             scoreMax: queryParams.scoreRange !== undefined ? queryParams.scoreRange.max : 0,
-            createTimeStart: queryParams.createTimeRange !== undefined ? 
-                `${queryParams.createTimeRange[0].$y}-${queryParams.createTimeRange[0].$M + 1}-${queryParams.createTimeRange[0].$D}`
+            createTimeStart: (queryParams.createTimeRange !== undefined && queryParams.createTimeRange !== null) ? 
+                `${queryParams.createTimeRange?.[0].$y}-${queryParams.createTimeRange?.[0].$M + 1}-${queryParams.createTimeRange?.[0].$D}`
                 : '', 
-            createTimeEnd: queryParams.createTimeRange !== undefined ? 
-                `${queryParams.createTimeRange[1].$y}-${queryParams.createTimeRange[1].$M + 1}-${queryParams.createTimeRange[1].$D}`
+            createTimeEnd: (queryParams.createTimeRange !== undefined && queryParams.createTimeRange !== null)  ? 
+                `${queryParams.createTimeRange?.[1].$y}-${queryParams.createTimeRange?.[1].$M + 1}-${queryParams.createTimeRange?.[1].$D}`
                 : '',
-            vipTimeStart: queryParams.vipTimeRange !== undefined ?
-            `${queryParams.vipTimeRange[0].$y}-${queryParams.vipTimeRange[0].$M + 1}-${queryParams.vipTimeRange[0].$D}`
+            vipTimeStart: (queryParams.vipTimeRange !== undefined && queryParams.vipTimeRange !== null)  ?
+            `${queryParams.vipTimeRange?.[0].$y}-${queryParams.vipTimeRange?.[0].$M + 1}-${queryParams.vipTimeRange?.[0].$D}`
                 : '',
-            vipTimeEnd: queryParams.vipTimeRange !== undefined ?
-                `${queryParams.vipTimeRange[1].$y}-${queryParams.vipTimeRange[1].$M + 1}-${queryParams.vipTimeRange[1].$D}`
+            vipTimeEnd: (queryParams.vipTimeRange !== undefined && queryParams.vipTimeRange !== null) ?
+                `${queryParams.vipTimeRange?.[1].$y}-${queryParams.vipTimeRange?.[1].$M + 1}-${queryParams.vipTimeRange?.[1].$D}`
                 : '',
-            svipTimeStart: queryParams.svipTimeRange !== undefined ?
-                `${queryParams.svipTimeRange[0].$y}-${queryParams.svipTimeRange[0].$M + 1}-${queryParams.svipTimeRange[0].$D}`
+            svipTimeStart: (queryParams.svipTimeRange !== undefined && queryParams.svipTimeRange !== null) ?
+                `${queryParams.svipTimeRange?.[0].$y}-${queryParams.svipTimeRange?.[0].$M + 1}-${queryParams.svipTimeRange?.[0].$D}`
                 : '',
-            svipTimeEnd: queryParams.svipTimeRange !== undefined ?
-                `${queryParams.svipTimeRange[1].$y}-${queryParams.svipTimeRange[1].$M + 1}-${queryParams.svipTimeRange[1].$D}`
+            svipTimeEnd: (queryParams.svipTimeRange !== undefined && queryParams.svipTimeRange !== null) ?
+                `${queryParams.svipTimeRange?.[1].$y}-${queryParams.svipTimeRange?.[1].$M + 1}-${queryParams.svipTimeRange?.[1].$D}`
                 : '',
           })
           return Promise.resolve({

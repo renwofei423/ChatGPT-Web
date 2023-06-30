@@ -118,16 +118,23 @@ function Global(props: Props) {
   
 
   useEffect(() => {
-    if (chats.length <= 0) {
-      addChat()
-    } else {
-      const id = chats[0].id
-      getMysqlChats(id).then(mysqlChats => {
-        updateChats(mysqlChats);
-      }).catch(error => {
-        console.error(error);
-      });
-      changeSelectChatId(id)
+    console.log('token',token)
+    if(token !== undefined && token !== null){
+      if (chats.length <= 0) {
+        addChat()
+      } else {
+        const id = chats[0].id
+        getMysqlChats(id).then(mysqlChats => {
+          updateChats(mysqlChats);
+        }).catch(error => {
+          console.error(error);
+        });
+        changeSelectChatId(id)
+      }
+    }else {
+      if (chats.length <= 0) {
+        addChat()
+      }
     }
 	configAsync.fetchConfig()
   }, [])

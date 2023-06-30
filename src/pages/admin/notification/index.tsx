@@ -228,8 +228,10 @@ function NotificationPage() {
             return
           }
           if (id) {
+            console.log('edidInfoModal.info',edidInfoModal.info)
             // 编辑
             putAdminNotification(edidInfoModal.info).then((res) => {
+            
               if (res.code) return
               setEdidInfoModal(() => {
                 return {

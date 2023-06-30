@@ -15,6 +15,20 @@ export async function fetchLogin(params: RequestLoginParams) {
   return response
 }
 
+export async function getRoomLatest(): Promise<string> {
+  try {
+    const roomsResult = await getRooms();
+    if (roomsResult.code !== -1 && roomsResult.data.count >= 1) {
+      const latestRoomId = roomsResult.data.rows[0].room_id;
+      return latestRoomId;
+    } else {
+      return '';
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function getMysqlChats(nowId: string): Promise<Array<ChatsInfo>> {
   try {
     const roomsResult = await getRooms();

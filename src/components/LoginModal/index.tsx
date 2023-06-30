@@ -2,7 +2,7 @@
 import { getCode } from '@/request/api'
 import { chatStore } from '@/store'
 import { userAsync } from '@/store/async'
-import { getMysqlChats } from '@/store/user/async'
+import { getMysqlChats ,getRoomLatest } from '@/store/user/async'
 import { RequestLoginParams } from '@/types'
 import {
   HeartFilled,
@@ -31,7 +31,7 @@ export function LoginCard(props: {
 }) {
 
   const [loginType, setLoginType] = useState<LoginType>('code');
-  const { updateChats , changeSelectChatId} = chatStore()
+  const { chats, selectChatId, updateChats , changeSelectChatId} = chatStore()
   return (
     <LoginForm<RequestLoginParams>
       form={props.form}
@@ -62,10 +62,13 @@ export function LoginCard(props: {
               }
               props.onSuccess?.()
               resolve(true)
-              getMysqlChats('1111').then(mysqlChats => {
-                updateChats(mysqlChats);
-              }).catch(error => {
-                console.error(error);
+              //查找用户最新roomid
+              getRoomLatest().then(latestRoomId => {
+                  getMysqlChats(latestRoomId).then(mysqlChats => {
+                    updateChats(mysqlChats);
+                    changeSelectChatId(latestRoomId);
+                  })
+            
               });
             })
             .catch(() => {

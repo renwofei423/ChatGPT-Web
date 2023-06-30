@@ -23,12 +23,8 @@ async function addNotification(data) {
     const add = await mysql_1.default.create(data);
     return add;
 }
-async function editNotification(id, data) {
-    const edit = await mysql_1.default.update(data, {
-        where: {
-            id
-        }
-    });
+async function editNotification(data) {
+    const edit = await mysql_1.default.upsert(data);
     return edit;
 }
 exports.default = {

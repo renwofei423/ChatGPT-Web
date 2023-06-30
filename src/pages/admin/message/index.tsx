@@ -115,13 +115,13 @@ function MessagePage() {
 
                     // 表单搜索项会从 params 传入，传递给后端接口。
                     const res = await getAdminMessages({
-                        page: params.current || 1,
-                        page_size: params.pageSize || 10,
+                        page: queryParams.page || 1,
+                        page_size: queryParams.pageSize || 10,
                         account: queryParams.account ?? '',
-                        createTimeStart: queryParams.createTimeRange !== undefined ? 
+                        createTimeStart: (queryParams.createTimeRange !== undefined && queryParams.createTimeRange !== null ) ? 
                             `${queryParams.createTimeRange[0].$y}-${queryParams.createTimeRange[0].$M + 1}-${queryParams.createTimeRange[0].$D}`
                             : '', 
-                        createTimeEnd: queryParams.createTimeRange !== undefined ? 
+                        createTimeEnd: (queryParams.createTimeRange !== undefined && queryParams.createTimeRange !== null ) ? 
                             `${queryParams.createTimeRange[1].$y}-${queryParams.createTimeRange[1].$M + 1}-${queryParams.createTimeRange[1].$D}`
                             : '',
                     });

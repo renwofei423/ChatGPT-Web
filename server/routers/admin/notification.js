@@ -39,16 +39,19 @@ router.post('/notification', async function (req, res, next) {
     res.json((0, utils_1.httpBody)(0, addRes));
 });
 router.put('/notification', async function (req, res, next) {
-    const { id, title, content, sort, status } = req.body;
+    const { id, title, content, sort, status ,create_time, update_time} = req.body;
     if (!id || !title || !content) {
         res.json((0, utils_1.httpBody)(-1, '缺少必要参数'));
         return;
     }
-    const editRes = await models_1.notificationModel.editNotification(id, (0, utils_1.filterObjectNull)({
+    const editRes = await models_1.notificationModel.editNotification((0, utils_1.filterObjectNull)({
+        id,
         title,
         content,
         sort,
-        status
+        status,
+        create_time,
+        update_time
     }));
     res.json((0, utils_1.httpBody)(0, editRes));
 });
