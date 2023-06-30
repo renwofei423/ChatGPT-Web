@@ -29,8 +29,6 @@ services:
     image: renwofei423/chatgpt-web:lastest
     ports:
       - 3000:80
-    environment:
-      VITE_APP_REQUEST_HOST: http://127.0.0.1
     depends_on:
         - chatgpt-web-backend
 
