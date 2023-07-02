@@ -28,7 +28,7 @@ services:
   chatgpt-web:
     image: renwofei423/chatgpt-web:latest
     ports:
-      - 3000:80
+      - 3100:80
     depends_on:
         - chatgpt-web-backend
 
