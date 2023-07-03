@@ -41,6 +41,8 @@ services:
     depends_on:
         - db
         - redis
+    environment:
+    - HOSTNAME=mydomain.com
 
 volumes:
   mysql_data: {}
