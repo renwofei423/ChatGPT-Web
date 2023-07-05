@@ -314,8 +314,290 @@ router.post('/images/generations', async (req, res) => {
     });
     res.json((0, utils_1.httpBody)(0, data));
 });
-// 对话
+// ---------------------------------------------------
 router.post('/chat/completions', async (req, res) => {
+    const user_id = req?.user_id;
+    const { prompt, parentMessageId, selectChatIdStr, userMessageId: oldUserMessageId, assistantMessageId: oldAssistantMessageId } = req.body;
+
+    if (!user_id) {
+        res.status(500).json((0, utils_1.httpBody)(-1, '服务端错误'));
+        return;
+    }
+
+    // 将所有需要的数据库查询放在同一个地方，并尽可能地并行执行
+    const [userInfo, historyMessageCount, ai3_ratio, ai4_ratio] = await Promise.all([
+        models_1.userModel.getUserInfo({ id: user_id }),
+        models_1.configModel.getConfig('history_message_count'),
+        models_1.configModel.getConfig('ai3_ratio'),
+        models_1.configModel.getConfig('ai4_ratio')
+    ]);
+
+    const ip = (0, utils_1.getClientIP)(req);
+
+    // 取出options值
+    const model = req.body.options?.model;
+    const temperature = req.body.options?.temperature;
+    const presence_penalty = req.body.options?.presence_penalty;
+    const frequency_penalty = req.body.options?.frequency_penalty;
+    let max_tokens_value = req.body.options?.max_tokens;
+
+    if (model.includes('gpt-4')) {
+        max_tokens_value = 4096;
+    } else if (model === 'gpt-3.5-trubo' && max_tokens_value >= 2048) {
+        max_tokens_value = 2048;
+    }
+
+    const options = {
+        frequency_penalty: frequency_penalty ?? 0,
+        model,
+        presence_penalty: presence_penalty ?? 0,
+        temperature: temperature ?? 0.5,
+        ...req.body.options,
+        max_tokens: max_tokens_value ?? 2048
+    };
+
+
+    console.log('chat options', options)
+
+    // 直接创建今天的Date对象，无需修改
+    const todayTime = new Date().setHours(0, 0, 0, 0);
+    const vipExpireTime = new Date(userInfo.vip_expire_time).getTime
+    const svipExpireTime = new Date(userInfo.svip_expire_time).getTime();
+
+    // 如果模型是 'gpt-4'
+    if (options.model.includes('gpt-4')) {
+        // 检查用户是否是超级会员，如果不是超级会员
+        if (svipExpireTime < todayTime) {
+            // 再检查积分是否不足20
+            if (userInfo.integral <= 20) {
+                res.status(400).json((0, utils_1.httpBody)(-1, [], '积分不足，请在个人中心签到获取积分或开通超级会员后继续使用'));
+                return;
+            }
+        }
+    }
+
+    // 如果模型是 'gpt-3'
+    if (options.model.includes('gpt-3')) {
+        // 检查用户是否是会员，如果用户既不是会员也不是超级会员
+        if (vipExpireTime < todayTime && svipExpireTime < todayTime) {
+            // 再检查积分是否不足0
+            if (userInfo.integral <= 0) {
+                res.status(400).json((0, utils_1.httpBody)(-1, [], '积分不足，请在个人中心签到获取积分或开通会员后继续使用'));
+                return;
+            }
+        }
+    }
+
+    const getMessagesData = await models_1.messageModel.getMessages({ page: 0, page_size: Number(historyMessageCount) }, {
+        parent_message_id: parentMessageId
+    });
+    const historyMessages = getMessagesData.rows.map((item) => ({
+        role: item.toJSON().role,
+        content: item.toJSON().content
+    })).reverse();
+
+    let userMessage = prompt;
+    let userMessageTokens = new gpt_tokens_1.GPTTokens({
+        model: options.model,
+        messages: [{
+            role: 'user',
+            content: userMessage
+        }]
+    });
+
+
+
+    // 如果用户消息的token数量超过最大限制，进行截断处理
+    if (userMessageTokens.usedTokens > max_tokens_value) {
+        let truncatedUserMessage = userMessage;
+        let truncatedUserMessageTokens;
+
+        // 截取用户消息，每次截取后
+        // 截取用户消息，每次截取后检查token数量
+        while (userMessageTokens.usedTokens > max_tokens_value) {
+            truncatedUserMessage = truncatedUserMessage.slice(0, truncatedUserMessage.length - 100);
+            truncatedUserMessageTokens = new gpt_tokens_1.GPTTokens({
+                model: options.model,
+                messages: [{
+                    role: 'user',
+                    content: truncatedUserMessage
+                }]
+            });
+            userMessageTokens = truncatedUserMessageTokens;
+        }
+
+        userMessage = truncatedUserMessage;
+    }
+    // 只有在用户消息的token数量未超过最大限制时，才处理历史消息
+    if (userMessageTokens.usedTokens <= max_tokens_value) {
+        const historyMessagesTokens = new gpt_tokens_1.GPTTokens({
+            model: options.model,
+            messages: historyMessages
+        });
+
+        let total_tokens = historyMessagesTokens.usedTokens;
+        total_tokens += userMessageTokens.usedTokens;
+
+        while (total_tokens > max_tokens_value && historyMessages.length > 0) {
+            // 移除最早的消息
+            const removedMessage = historyMessages.shift();
+            // 更新token总数
+            const removedMessageTokens = new gpt_tokens_1.GPTTokens({
+                model: options.model,
+                messages: [removedMessage]
+            });
+            total_tokens -= removedMessageTokens.usedTokens;
+        }
+    }
+
+    // 检查是否存在 "system" 角色的消息
+    const systemMessageExists = historyMessages.some(message => message.role === 'system');
+
+    // 如果不存在 "system" 角色的消息，那么在数组开头添加一条
+    if (!systemMessageExists) {
+        const currentDate = new Date();
+        const currentTimeString = currentDate.toLocaleString();  // 转化为本地时间字符串
+
+        historyMessages.unshift({
+            role: 'system',
+            content: `From now on, accept new prompt:
+                    You are ChatGPT, a large language model trained by OpenAI, based on the GPT-4 architecture.
+                    When we converse, I don't need to ask further questions; you will provide me with detailed and comprehensive answers directly! I really dislike it when a topic requires many questions for you to provide a complete and comprehensive response.
+                    Knowledge cutoff: 2023-06. Answer me with Markdown if content fits . Current time: ${currentTimeString}`
+        });
+    }
+
+
+    const messages = [
+        ...historyMessages,
+        {
+            role: 'user',
+            content: userMessage
+        }
+    ];
+
+
+
+const tokenInfo = await models_1.tokenModel.getOneToken({ model: options.model });
+if (!tokenInfo || !tokenInfo.id) {
+    res.status(500).json((0, utils_1.httpBody)(-1, '未配置对应AI模型'));
+    return;
+}
+
+queue_1.checkTokenQueue.addTask({
+    ...tokenInfo
+});
+
+const chat = await(0, node_fetch_1.default)(`${tokenInfo.host}/v1/chat/completions`, {
+    method: 'POST',
+    body: JSON.stringify({
+        ...options,
+        messages,
+        stream: true
+    }),
+    headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${tokenInfo.key}`
+    }
+});
+
+const assistantMessageId = (0, utils_1.generateNowflakeId)(2)();
+const userMessageId = (0, utils_1.generateNowflakeId)(1)();
+const userMessageInfo = {
+    user_id,
+    room_id: selectChatIdStr,
+    message_id: oldUserMessageId,
+    id: userMessageId,
+    role: 'user',
+    content: prompt,
+    parent_message_id: parentMessageId,
+    ...options
+};
+const assistantInfo = {
+    user_id,
+    room_id: selectChatIdStr,
+    message_id: oldAssistantMessageId,
+    id: assistantMessageId,
+    role: 'assistant',
+    content: '',
+    parent_message_id: parentMessageId,
+    ...options
+};
+
+if (chat.status === 200 && chat.headers.get('content-type')?.includes('text/event-stream')) {
+    const aiRatioInfo = {
+        ai3_ratio,
+        ai4_ratio
+    };
+    // 添加一个标志位来记录是否已经计算过费用
+    let isFeeCalculated = false;
+    // 添加一个标志位来记录是否已经结束对话
+    // let isConversationEnded = false;
+
+    res.setHeader('Content-Type', 'text/event-stream;charset=utf-8');
+    const jsonStream = new stream_1.Transform({
+        objectMode: true,
+        transform(chunk, encoding, callback) {
+            const bufferString = Buffer.from(chunk).toString();
+            const listString = (0, utils_1.handleChatData)(bufferString, assistantMessageId);
+
+            if (listString && !isFeeCalculated) {
+                // 将用户的消息存入数据库
+                // 将返回的数据存入数据库
+                models_1.messageModel.addMessages([userMessageInfo, assistantInfo]);
+
+                if (options.model.includes('gpt-4') && svipExpireTime < todayTime) {
+                    deductFeesAndLog(user_id, options.model, aiRatioInfo.ai4_ratio, 'gpt-4');
+                } else if (options.model.includes('gpt-3') && vipExpireTime < todayTime && svipExpireTime < todayTime) {
+                    deductFeesAndLog(user_id, options.model, aiRatioInfo.ai3_ratio, 'gpt-3');
+                }
+
+                // 计费，记录行动
+                isFeeCalculated = true;
+            }
+
+            callback(null, listString);
+        }
+    });
+
+    chat.body?.pipe(jsonStream).pipe(res);
+    return;
+  }
+
+    const data = await chat.json();
+    res.status(chat.status).json(data);
+});
+
+function deductFeesAndLog(user_id, model, ratio, modelDesc, ip) {
+    const turnoverId = (0, utils_1.generateNowflakeId)(1)();
+    models_1.userModel.updataUserVIP({
+        id: user_id,
+        type: 'integral',
+        value: ratio,
+        operate: 'decrement'
+    });
+    models_1.turnoverModel.addTurnover({
+        id: turnoverId,
+        user_id,
+        describe: `对话(${model})`,
+        value: `-${ratio}积分`
+    });
+    models_1.actionModel.addAction({
+        user_id,
+        id: (0, utils_1.generateNowflakeId)(23)(),
+        ip,
+        type: 'chat',
+        describe: `对话(${model})`
+    });
+}
+
+
+
+
+// --------------------end-----------------------------
+// 对话
+router.post('/chat/completions2', async (req, res) => {
+    console.time('chat');
     const user_id = req?.user_id;
     if (!user_id) {
         res.status(500).json((0, utils_1.httpBody)(-1, '服务端错误'));
@@ -665,6 +947,8 @@ router.post('/chat/completions', async (req, res) => {
     }
     const data = await chat.json();
     res.status(chat.status).json(data);
+    console.log('-----------------------------------------------------------------time-----------------')
+    console.endTime('chat');
 });
 
 //创建room

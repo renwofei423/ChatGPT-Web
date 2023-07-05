@@ -1,7 +1,7 @@
 {
     "name": "chatgpt-web-backend",
     "private": true,
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "ChatGPT Web Backend",
     "author": "Epoch",
     "keywords": [
