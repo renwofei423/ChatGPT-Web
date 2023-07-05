@@ -7,11 +7,11 @@ function getConfig(key) {
 		port: 3200,  // 端口号，确保没有被占用
 		mysql_config: {  // MySQL配置信息
 			dialect: 'mysql',
-			host: 'xxxx',  // 数据库主机地址
+			host: 'db',  // 数据库主机地址, 容器部署使用services里的名字即可
 			port: 3306,  // 数据库端口号，默认3306
-			username: 'chatgptv2',  // 数据库用户名
-			password: 'chatgptv2',  // 数据库密码
-			database: 'chatgptv2',  // 数据库名称
+			username: 'root',  // 数据库用户名
+			password: 'my-secret-pw',  // 数据库密码
+			database: 'chatgpt',  // 数据库名称
 			timezone: '+08:00',
 			dialectOptions: {
 				dateStrings: true,
@@ -20,9 +20,9 @@ function getConfig(key) {
 		},
 		redis_config: {  // Redis配置信息，一般不用改
 			type: 'redis',
-			host: 'xxxx',
+			host: 'redis', // 容器部署使用services里的名字即可
 			port: 6379,
-			password: 'xxxx'
+			password: 'my-secret-pw'
 		},
 		email: 'xxxx',  // 邮件地址
 		email_config: {  // 邮件配置信息

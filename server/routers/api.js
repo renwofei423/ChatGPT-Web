@@ -328,11 +328,11 @@ router.post('/chat/completions', async (req, res) => {
     const { prompt, parentMessageId, selectChatIdStr, userMessageId: oldUserMessageId, assistantMessageId: oldAssistantMessageId } = req.body;
 
     // 取出options值
-    const model = req.body.options?.model;   
-    const temperature = req.body.options?.temperature;  
-    const presence_penalty = req.body.options?.presence_penalty;   
-    const frequency_penalty = req.body.options?.frequency_penalty;   
-    let max_tokens_value = req.body.options?.max_tokens; 
+    const model = req.body.options?.model;
+    const temperature = req.body.options?.temperature;
+    const presence_penalty = req.body.options?.presence_penalty;
+    const frequency_penalty = req.body.options?.frequency_penalty;
+    let max_tokens_value = req.body.options?.max_tokens;
 
     if (model.includes('gpt-4')) {
         max_tokens_value = 4096;

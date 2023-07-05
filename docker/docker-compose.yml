@@ -1,0 +1,50 @@
+version: '3.1'
+
+services:
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8090:8080
+
+  db:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - 3306:3306
+
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+    command: redis-server --requirepass my-secret-pw
+
+  chatgpt-web:
+    image: renwofei423/chatgpt-web:latest
+    ports:
+      - 3100:80
+    depends_on:
+        - chatgpt-web-backend
+
+  chatgpt-web-backend:
+    image: renwofei423/chatgpt-web-backend:latest
+    ports:
+      - 3200:3200
+    volumes:
+      - chatgpt-web-backend_config:/server/config
+    depends_on:
+        - db
+        - redis
+    environment:
+    - HOSTNAME=mydomain.com
+
+volumes:
+  mysql_data: {}
+  redis_data: {}
+  chatgpt-web-backend_config: {}
