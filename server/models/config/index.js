@@ -17,6 +17,16 @@ async function getConfig(key) {
     }
     return findAll;
 }
+
+async function getKeyConfig(key) {
+    const find = await mysql_1.default.findOne({
+        where: {
+            name: key
+        }
+    });
+    return find;
+}
+
 async function editConfigs(updatedData) {
     return db_1.sequelizeExample.transaction(async (t) => {
         for (const data of updatedData) {
@@ -30,6 +40,7 @@ async function editConfigs(updatedData) {
 }
 exports.default = {
     getConfig,
-    editConfigs
+    editConfigs,
+    getKeyConfig
 };
 //# sourceMappingURL=index.js.map

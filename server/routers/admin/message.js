@@ -45,7 +45,7 @@ router.get('/messages', async function (req, res, next) {
         },
       };
 
-    const messages = await models_1.messageModel.getMessages({ page, page_size }, whereMessage);
+    const messages = await models_1.messageModel.getAdminMessages({ page, page_size }, whereMessage);
     res.json((0, utils_1.httpBody)(0, messages));
 });
 exports.default = router;

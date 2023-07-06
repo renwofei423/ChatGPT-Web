@@ -1,4 +1,8 @@
 
+CREATE DATABASE IF NOT EXISTS chatgpt;
+USE chatgpt;
+
+
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";

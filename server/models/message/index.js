@@ -8,6 +8,23 @@ async function addMessages(datas) {
     return captains;
 }
 async function getMessages({ page, page_size }, where) {
+    // mysql_2.default.belongsTo(mysql_1.default, { foreignKey: 'user_id', targetKey: 'id' });
+    const find = await mysql_2.default.findAndCountAll({
+        where,
+        // include: [
+        //     {
+        //         model: mysql_1.default,
+        //         required: false,
+        //     }
+        // ],
+        order: [['create_time', 'DESC']],
+        offset: page < 1 ? page * page_size : (page - 1) * page_size,
+        limit: page_size
+    });
+    return find;
+}
+
+async function getAdminMessages({ page, page_size }, where) {
     mysql_2.default.belongsTo(mysql_1.default, { foreignKey: 'user_id', targetKey: 'id' });
     const find = await mysql_2.default.findAndCountAll({
         where,
@@ -45,6 +62,7 @@ exports.default = {
     addMessages,
     getMessages,
     updateMessages,
-    getRoomMessages
+    getRoomMessages,
+    getAdminMessages
 };
 //# sourceMappingURL=index.js.map

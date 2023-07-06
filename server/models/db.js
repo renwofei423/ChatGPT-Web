@@ -10,7 +10,8 @@ const sequelizeExample = new sequelize_1.Sequelize({
     ...config_1.default.getConfig('mysql_config'),
     // dialectModule: mysql2_1.default,
     logging: (sql, queryObject) => {
-        console.log('sql: ',sql, '\n sql where:', queryObject.where ?? '', '\n sql find: ',  queryObject.find ?? '');
+        console.log('sql: ',sql)
+        // console.log('sql: ',sql, '\n sql where:', queryObject.where ?? '', '\n sql find: ',  queryObject.find ?? '');
     },
 });
 exports.sequelizeExample = sequelizeExample;

@@ -16,8 +16,8 @@ const alipay_1 = tslib_1.__importDefault(require('../helpers/alipay'));
 const yipay_1 = tslib_1.__importDefault(require('../helpers/yipay'));
 const router = express_1.default.Router();
 router.get('/config', async (req, res, next) => {
-    const shop_introduce = await models_1.configModel.getConfig('shop_introduce');
-    const user_introduce = await models_1.configModel.getConfig('user_introduce');
+    const shop_introduce = (await models_1.configModel.getKeyConfig('shop_introduce')).value;
+    const user_introduce = (await models_1.configModel.getKeyConfig('user_introduce')).value;
     const notification = await models_1.notificationModel.getNotification({ page: 0, page_size: 1000 }, { status: 1 });
     const notifications = notification.rows.sort((a, b) => {
         return a.sort - b.sort;
@@ -112,7 +112,7 @@ router.post('/login', async (req, res) => {
             const id = (0, utils_1.generateNowflakeId)(1)();
             const today = new Date();
             const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-            const register_reward = (await models_1.configModel.getConfig('register_reward')) || 0;
+            const register_reward = (await models_1.configModel.getKeyConfig('register_reward')).value || 0;
             userInfo = await models_1.userModel
                 .addUserInfo((0, utils_1.filterObjectNull)({
                     id,
@@ -251,7 +251,7 @@ router.post('/images/generations', async (req, res) => {
     }
     const ip = (0, utils_1.getClientIP)(req);
     let deductIntegral = 0;
-    const drawUsePrice = await models_1.configModel.getConfig('draw_use_price');
+    const drawUsePrice = (await models_1.configModel.getKeyConfig('draw_use_price')).value;
     if (drawUsePrice) {
         const drawUsePriceJson = JSON.parse(drawUsePrice.toString());
         for (const item of drawUsePriceJson) {
@@ -316,6 +316,7 @@ router.post('/images/generations', async (req, res) => {
 });
 // 对话
 router.post('/chat/completions', async (req, res) => {
+    console.time('chatBeforeCost');
     const user_id = req?.user_id;
     if (!user_id) {
         res.status(500).json((0, utils_1.httpBody)(-1, '服务端错误'));
@@ -380,20 +381,8 @@ router.post('/chat/completions', async (req, res) => {
         }
     }
 
-    const historyMessageCount = await models_1.configModel.getConfig('history_message_count');
-    const getMessagesData = await models_1.messageModel.getMessages({ page: 0, page_size: Number(historyMessageCount) }, {
-        parent_message_id: parentMessageId
-    });
-    let historyMessages = getMessagesData.rows
-        .map((item) => {
-            return {
-                role: item.toJSON().role,
-                content: item.toJSON().content
-            };
-        })
-        .reverse();
+    let historyMessages = '';
     // 确保历史消息和新的用户消息不超过限定 token
-
     let userMessage = prompt;
     let userMessageTokens = new gpt_tokens_1.GPTTokens({
         model: options.model,
@@ -402,6 +391,7 @@ router.post('/chat/completions', async (req, res) => {
             content: userMessage
         }]
     });
+
 
     // 如果用户消息的token数量超过最大限制，进行截断处理
     if (userMessageTokens.usedTokens > max_tokens_value) {
@@ -425,9 +415,11 @@ router.post('/chat/completions', async (req, res) => {
     }
     // 只有在用户消息的token数量未超过最大限制时，才处理历史消息
     if (userMessageTokens.usedTokens <= max_tokens_value) {
-        const historyMessageCount = await models_1.configModel.getConfig('history_message_count');
+        const historyMessageCount = (await models_1.configModel.getKeyConfig('history_message_count')).value;
+        // 不查询已经删除的message
         const getMessagesData = await models_1.messageModel.getMessages({ page: 0, page_size: Number(historyMessageCount) }, {
-            parent_message_id: parentMessageId
+            parent_message_id: parentMessageId,
+            status : 0,
         });
 
         historyMessages = getMessagesData.rows
@@ -483,7 +475,6 @@ router.post('/chat/completions', async (req, res) => {
             content: userMessage
         }
     ];
-
     const tokenInfo = await models_1.tokenModel.getOneToken({ model: options.model });
     if (!tokenInfo || !tokenInfo.id) {
         res.status(500).json((0, utils_1.httpBody)(-1, '未配置对应AI模型'));
@@ -492,6 +483,9 @@ router.post('/chat/completions', async (req, res) => {
     queue_1.checkTokenQueue.addTask({
         ...tokenInfo
     });
+    console.timeEnd('chatBeforeCost')
+
+    console.time('chatRealCost')
     const chat = await (0, node_fetch_1.default)(`${tokenInfo.host}/v1/chat/completions`, {
         method: 'POST',
         body: JSON.stringify({
@@ -504,6 +498,7 @@ router.post('/chat/completions', async (req, res) => {
             Authorization: `Bearer ${tokenInfo.key}`
         }
     });
+    console.timeEnd('chatRealCost')
     const assistantMessageId = (0, utils_1.generateNowflakeId)(2)();
     const userMessageId = (0, utils_1.generateNowflakeId)(1)();
     const userMessageInfo = {
@@ -527,8 +522,8 @@ router.post('/chat/completions', async (req, res) => {
         ...options
     };
     if (chat.status === 200 && chat.headers.get('content-type')?.includes('text/event-stream')) {
-        const ai3_ratio = (await models_1.configModel.getConfig('ai3_ratio')) || 0;
-        const ai4_ratio = (await models_1.configModel.getConfig('ai4_ratio')) || 0;
+        const ai3_ratio = (await models_1.configModel.getKeyConfig('ai3_ratio')).value || 0;
+        const ai4_ratio = (await models_1.configModel.getKeyConfig('ai4_ratio')).value || 0;
         const aiRatioInfo = {
             ai3_ratio,
             ai4_ratio
@@ -901,7 +896,7 @@ router.post('/signin', async (req, res, next) => {
         res.status(500).json((0, utils_1.httpBody)(-1, '今日已经签到了'));
         return;
     }
-    const signin_reward = (await models_1.configModel.getConfig('signin_reward')) || 0;
+    const signin_reward = (await models_1.configModel.getKeyConfig('signin_reward')).value || 0;
     const ip = (0, utils_1.getClientIP)(req);
     const id = (0, utils_1.generateNowflakeId)(1)();
     const turnoverId = (0, utils_1.generateNowflakeId)(1)();
