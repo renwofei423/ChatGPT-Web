@@ -26,6 +26,7 @@ function ConfigPage() {
 
   const [aiRatioForm] = Form.useForm<{
     ai3_ratio: number | string
+    ai3_16k_ratio: number | string
     ai4_ratio: number | string
   }>()
 
@@ -46,6 +47,7 @@ function ConfigPage() {
     const signinRewardInfo = getConfigValue('signin_reward', data)
     const historyMessageCountInfo = getConfigValue('history_message_count', data)
     const ai3Ratio = getConfigValue('ai3_ratio', data)
+    const ai316kRatio = getConfigValue('ai3_16k_ratio', data)
     const ai4Ratio = getConfigValue('ai4_ratio', data)
     const drawUsePrice = getConfigValue('draw_use_price', data)
     rewardForm.setFieldsValue({
@@ -57,6 +59,7 @@ function ConfigPage() {
     })
     aiRatioForm.setFieldsValue({
       ai3_ratio: Number(ai3Ratio.value),
+      ai3_16k_ratio: Number(ai316kRatio.value),
       ai4_ratio: Number(ai4Ratio.value)
     })
     if (drawUsePrice && drawUsePrice.value) {
@@ -209,7 +212,14 @@ function ConfigPage() {
           >
             <ProFormDigit
               name="ai3_ratio"
-              label="GPT3"
+              label="GPT3-4K"
+              tooltip="每次对话消耗多少积分"
+              min={0}
+              max={100000}
+            />
+            <ProFormDigit
+              name="ai3_16k_ratio"
+              label="GPT3-16K"
               tooltip="每次对话消耗多少积分"
               min={0}
               max={100000}

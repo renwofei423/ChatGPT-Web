@@ -93,7 +93,7 @@ CREATE TABLE `message` (
   `user_id` bigint DEFAULT NULL,
   `room_id` varchar(255) DEFAULT NULL,
   `message_id` varchar(255) DEFAULT NULL,
-  `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `content` longtext CHARACTER SET utf8mb4 NOT NULL,
   `role` varchar(255) DEFAULT NULL,
   `frequency_penalty` float DEFAULT NULL,
   `max_tokens` int DEFAULT NULL,
@@ -107,7 +107,7 @@ CREATE TABLE `message` (
   PRIMARY KEY (`id`),
   KEY `key_room_id` (`room_id`) USING BTREE,
   KEY `key_roomo_user` (`user_id`,`room_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 --
@@ -327,12 +327,6 @@ ALTER TABLE `carmi`
 --
 ALTER TABLE `config`
   ADD PRIMARY KEY (`id`,`name`) USING BTREE;
-
---
--- 表的索引 `message`
---
-ALTER TABLE `message`
-  ADD PRIMARY KEY (`id`);
 
 --
 -- 表的索引 `notification`
