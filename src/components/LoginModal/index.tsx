@@ -9,52 +9,69 @@ import {
   LockOutlined,
   MailOutlined,
   RedditCircleFilled,
-  RobotOutlined,
   SlackCircleFilled,
-  SmileFilled,
   TwitterCircleFilled
 } from '@ant-design/icons'
 import { LoginForm, ProFormCaptcha, ProFormText } from '@ant-design/pro-form'
 import { Form, FormInstance, Modal, Space, Tabs } from 'antd'
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 
 type Props = {
   open: boolean
   onCancel: () => void
 }
 
-type LoginType = 'code' | 'password' | string;
+type LoginType = 'code' | 'password' | 'register' | string;
 
 export function LoginCard(props: {
   form: FormInstance<RequestLoginParams>
   onSuccess: () => void
+  type?: LoginType
 }) {
 
-  const [loginType, setLoginType] = useState<LoginType>('code');
-  const { chats, selectChatId, updateChats , changeSelectChatId} = chatStore()
+  const location = useLocation();
+
+  function getQueryParam(key: string) {
+    const queryString = location.search || window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    return urlParams.get(key) || '';
+  }
+
+  const { type = 'password' } = props;
+
+  const [loginType, setLoginType] = useState<LoginType>(type);
+
+  const { updateChats , changeSelectChatId} = chatStore()
+
   return (
     <LoginForm<RequestLoginParams>
       form={props.form}
       logo={import.meta.env.VITE_APP_LOGO}
       title=""
       subTitle="全网最快最好用的人工智能AI"
-      // actions={(
-      //   <Space>
-      //     <HeartFilled />
-      //     <RedditCircleFilled />
-      //     <SlackCircleFilled />
-      //     <TwitterCircleFilled />
-      //   </Space>
-      // )}
+      actions={(
+        <Space>
+          <HeartFilled />
+          <RedditCircleFilled />
+          <SlackCircleFilled />
+          <TwitterCircleFilled />
+        </Space>
+      )}
       contentStyle={{
         width: '100%',
         maxWidth: '340px',
         minWidth: '100px'
       }}
+      submitter={{
+        searchConfig: {
+          submitText: loginType === 'register' ? '注册&登录' : '登录',
+        }
+      }}
       onFinish={async (e) => {
         return new Promise((resolve, reject) => {
           userAsync
-            .fetchLogin({ ...e })
+            .fetchLogin({ ...e, invite_code: getQueryParam('invite_code') })
             .then((res) => {
               if (res.code) {
                 reject(false)
@@ -83,24 +100,38 @@ export function LoginCard(props: {
         onChange={(activeKey) => {
           setLoginType(activeKey)
         }}
-      >
-        <Tabs.TabPane key="code" tab="登录/注册" />
-        <Tabs.TabPane key="password" tab="密码登录" />
-      </Tabs>
+        items={[
+          {
+            key: 'password',
+            label: '密码登录',
+          },
+          {
+            key: 'code',
+            label: '邮箱登录',
+          },
+          {
+            key: 'register',
+            label: '注册账号',
+          },
+        ]}
+      />
       <ProFormText
         fieldProps={{
           size: 'large',
-          prefix: <RobotOutlined />
+          prefix: <MailOutlined />
         }}
         name="account"
+        placeholder="邮箱"
         rules={[
           {
             required: true,
+            message: '请输入电子邮箱',
+            pattern: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
           }
         ]}
       />
       {
-        loginType === 'code' && (
+        loginType !== 'password' && (
           <ProFormCaptcha
             fieldProps={{
               size: 'large',
@@ -125,11 +156,11 @@ export function LoginCard(props: {
             ]}
             onGetCaptcha={async () => {
               const account = props.form.getFieldValue('account')
-              if (!account) {
+              if (!account || !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(account)) {
                 props.form.setFields([
                   {
                     name: 'account',
-                    errors: ['请输入有效的账号']
+                    errors: ['请输入有效的邮箱地址']
                   }
                 ])
                 return Promise.reject()
@@ -144,7 +175,7 @@ export function LoginCard(props: {
         )
       }
       {
-        loginType === 'password' && (
+        loginType !== 'code' && (
           <ProFormText.Password
             name="password"
             fieldProps={{

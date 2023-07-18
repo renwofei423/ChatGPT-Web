@@ -7,6 +7,15 @@ async function addMessages(datas) {
     const captains = await mysql_2.default.bulkCreate([...datas]);
     return captains;
 }
+async function delMessages(message_id) {
+    const del = await mysql_2.default.destroy({
+        where: {
+            message_id
+        }
+    });
+    return del;
+}
+
 async function getMessages({ page, page_size }, where) {
     // mysql_2.default.belongsTo(mysql_1.default, { foreignKey: 'user_id', targetKey: 'id' });
     const find = await mysql_2.default.findAndCountAll({
@@ -63,6 +72,7 @@ exports.default = {
     getMessages,
     updateMessages,
     getRoomMessages,
-    getAdminMessages
+    getAdminMessages,
+    delMessages
 };
 //# sourceMappingURL=index.js.map

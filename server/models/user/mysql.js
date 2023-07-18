@@ -31,6 +31,9 @@ exports.userMysql = db_1.sequelizeExample.define('user', {
     ip: {
         type: sequelize_1.DataTypes.STRING
     },
+    invite_code: {
+        type: sequelize_1.DataTypes.STRING
+    },
     status: {
         type: sequelize_1.DataTypes.NUMBER
     },

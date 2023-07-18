@@ -195,3 +195,20 @@ export interface NotificationInfo {
   create_time: string
   update_time: string
 }
+
+export interface InviteRecordInfo {
+  id: string
+  user_id: string
+  invite_code: string
+  superior_id: string
+  reward: string
+  reward_type: string
+  user_agent: string
+  remarks: string
+  user: UserInfo
+  superior: UserInfo
+  ip: string
+  status: number
+  create_time: string
+  update_time: string
+}

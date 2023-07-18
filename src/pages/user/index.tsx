@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Button, Form, Space, Tooltip, message } from 'antd'
+import { Button, Form, QRCode, Space, Tooltip, Typography, message } from 'antd'
 import Layout from '@/components/Layout'
 import { getCode, getSigninList, postSignin } from '@/request/api'
 import { userAsync } from '@/store/async'
@@ -18,7 +18,7 @@ const monthAbbreviations = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AU
 function UserPage() {
   const navigate = useNavigate()
   const { token, user_info } = userStore()
-  const { user_introduce } = configStore()
+  const { user_introduce ,  invite_introduce} = configStore()
   const [userAccountForm] = Form.useForm()
   const [signinLoading, setSigninLoading] = useState(false)
   const [signinList, setSigninList] = useState<Array<SigninInfo>>([])
@@ -149,6 +149,29 @@ function UserPage() {
                   {user_info?.is_signin ? '今日已签到' : '立即签到'}
                 </Button>
               </Space>
+            </div>
+            {/* 邀请区域 */}
+            <div className={styles.userPage_card}>
+              <h4>邀请链接/二维码</h4>
+              <div className={styles.userPage_invite}>
+                <QRCode
+                  size={160}
+                  value={`${location.origin}/login?invite_code=${user_info?.invite_code}`}
+                  color="#1877ff"
+                />
+                <div className={styles.userPage_invite_info}>
+                  <p className={styles.userPage_invite_info_link}>
+                    <Typography.Paragraph copyable style={{ marginBottom: 0, color: '#1877ff' }}>
+                      邀请链接：{`${location.origin}/login?invite_code=${user_info?.invite_code}`}
+                    </Typography.Paragraph>
+                  </p>
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: invite_introduce
+                    }}
+                  />
+                </div>
+              </div>
             </div>
           </Space>
         </div>

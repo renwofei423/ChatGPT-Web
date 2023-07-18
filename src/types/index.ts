@@ -4,6 +4,7 @@ export interface RequestLoginParams {
   account: string
   code?: string | number
   password?: string
+  invite_code?: string
 }
 
 export interface UserInfo {
@@ -17,6 +18,7 @@ export interface UserInfo {
   svip_expire_time: string
   ip: string
   status: number
+  invite_code?: string
   create_time: string
   update_time: string
   is_signin: number
@@ -100,7 +102,7 @@ export interface ChatResultInfo {
 
 // 对话记录
 export interface ChatGpt {
-  id: string | number
+  id: string
   text: string
   dateTime: string
   status: 'pass' | 'loading' | 'error'

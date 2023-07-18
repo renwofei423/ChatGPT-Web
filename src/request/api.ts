@@ -63,6 +63,11 @@ export function postMessageUpdateStatus(params: { roomId: string }){
   return request.post('/api/messageupdatestatus', params)
 }
 
+//请求删除message
+export function postDelMessage(params: { messageId: string }){
+  return request.post('/api/delmessage', params)
+}
+
 //获取user_id 所有room
 export function getRooms(){
   return request.get<{ count: number; rows: Array<RoomInfo> }>('/api/getrooms')

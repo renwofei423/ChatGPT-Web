@@ -33,6 +33,7 @@ import AdminConfigPage from '@/pages/admin/config'
 import AdminPaymentPage from '@/pages/admin/payment'
 import AdminOrderPage from '@/pages/admin/order'
 import AdminNotificationPage from '@/pages/admin/notification'
+import AdminInvitePage from '@/pages/admin/invite'
 
 
 export const webRouter: RouteOptions[] = [
@@ -207,7 +208,7 @@ export const adminRouter: RouteOptions[] = [
         element: <AdminTokenPage />,
         index: false,
         configure: {
-          title: 'Toekn管理',
+          title: 'Token管理',
           verifToken: true,
           role: ['administrator']
         }
@@ -244,7 +245,18 @@ export const adminRouter: RouteOptions[] = [
           verifToken: true,
           role: ['administrator']
         }
-      }
+      },
+      {
+        id: 'AdminInvitePage',
+        path: '/admin/invite',
+        element: <AdminInvitePage />,
+        index: false,
+        configure: {
+          title: '邀请记录',
+          verifToken: true,
+          role: ['administrator']
+        }
+      },
     ],
     configure: {
       verifToken: true,

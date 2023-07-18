@@ -2,14 +2,16 @@ import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 
 type Props = {
-	value?: string,
-	onChange: (value: string) => void;
+  value?: string
+  defaultValue?: string
+  onChange: (value: string) => void
 }
 
 function RichEdit(props: Props) {
   return (
     <ReactQuill
       theme="snow"
+      defaultValue={props?.defaultValue}
       value={props?.value}
       onChange={props.onChange}
       formats={[

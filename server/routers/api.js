@@ -18,6 +18,7 @@ const router = express_1.default.Router();
 router.get('/config', async (req, res, next) => {
     const shop_introduce = (await models_1.configModel.getKeyConfig('shop_introduce')).value;
     const user_introduce = (await models_1.configModel.getKeyConfig('user_introduce')).value;
+    const invite_introduce = (await models_1.configModel.getKeyConfig('invite_introduce')).value;
     const notification = await models_1.notificationModel.getNotification({ page: 0, page_size: 1000 }, { status: 1 });
     const notifications = notification.rows.sort((a, b) => {
         return a.sort - b.sort;
@@ -25,6 +26,7 @@ router.get('/config', async (req, res, next) => {
     res.json((0, utils_1.httpBody)(0, {
         shop_introduce,
         user_introduce,
+        invite_introduce,
         notifications: notifications
     }));
 });
@@ -530,6 +532,11 @@ router.post('/chat/completions', async (req, res) => {
             ai3_16k_ratio,
             ai4_ratio
         };
+        // 重试的时候 删除此前消息
+        if(oldUserMessageId === ''){
+            await models_1.messageModel.delMessages(oldAssistantMessageId);
+        }
+
         // 添加一个标志位来记录是否已经计算过费用
         let isFeeCalculated = false;
         // 添加一个标志位来记录是否已经结束对话
@@ -551,7 +558,12 @@ router.post('/chat/completions', async (req, res) => {
                             // 将用户的消息存入数据库
                             // 将返回的数据存入数据库
                             // 扣除相关
-                            models_1.messageModel.addMessages([userMessageInfo, assistantInfo]);
+
+                            if(oldUserMessageId === ''){
+                                models_1.messageModel.addMessages([assistantInfo]);
+                            }else{
+                                models_1.messageModel.addMessages([userMessageInfo, assistantInfo]);
+                            }
                             if (!isFeeCalculated) {
                                 if (options.model.includes('gpt-4') && svipExpireTime < todayTime) {
                                     // GPT-4 非 SVIP 用户扣费逻辑，这里不再计算 tokens，直接扣除固定的 ratio
@@ -745,6 +757,20 @@ router.post('/messageupdatestatus', async (req, res) => {
     });
 
     res.json((0, utils_1.httpBody)(0, updateRes, '更新room title成功'));
+});
+
+//删除message
+router.post('/delmessage', async (req, res) => {
+    const user_id = req?.user_id;
+    if (!user_id) {
+        res.status(500).json((0, utils_1.httpBody)(-1, '服务端错误'));
+        return;
+    }
+    const { messageId } = req.body;
+
+    const delRes = await models_1.messageModel.delMessages(messageId);
+
+    res.json((0, utils_1.httpBody)(0, delRes, '删除message成功'));
 });
 
 //得到所有rooms

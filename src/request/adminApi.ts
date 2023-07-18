@@ -3,6 +3,7 @@ import {
   ConfigInfo,
   GetMessageParam,
   GetUserParam,
+  InviteRecordInfo,
   MessageInfo,
   NotificationInfo,
   OrderInfo,
@@ -167,4 +168,24 @@ export function postAdminNotification(params: NotificationInfo) {
 // 编辑 Notification
 export function putAdminNotification(params: NotificationInfo) {
   return request.put('/api/admin/notification', params)
+}
+
+// 获取邀请记录
+export function getAdminInviteRecord(params: Paging) {
+  return request.get<TableData<InviteRecordInfo>>('/api/admin/invite_record', params)
+}
+
+// 删除邀请记录
+export function delAdminInviteRecord(params: { id: string | number }) {
+  return request.del(`/api/admin/invite_record/${params.id}`)
+}
+
+// 修改邀请记录
+export function putAdminInviteRecord(params: InviteRecordInfo) {
+  return request.put('/api/admin/invite_record', params)
+}
+
+// 邀请通过
+export function putAdminInviteRecordPass(params?: { id: string | number }) {
+  return request.put('/api/admin/invite_record/pass', params)
 }

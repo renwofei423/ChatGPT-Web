@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { ChatGpt, ChatsInfo } from '@/types'
 import { formatTime, generateChatInfo } from '@/utils'
-import { postRoomCreate, postRoomUpdateStatus, postRoomUpdateTitle, postMessageUpdateStatus, getRooms } from '@/request/api'
+import { postRoomCreate, postRoomUpdateStatus, postRoomUpdateTitle, postMessageUpdateStatus, getRooms, postDelMessage } from '@/request/api'
 import { getMysqlChats, getNowChats } from '../user/async'
 
 
@@ -112,6 +112,8 @@ const chatStore = create<ChatState>()(
         set((state: ChatState) => {
           const newChats = state.chats.map((c) => {
             if (c.id === id) {
+              // mysql删除消息
+              postDelMessage({ messageId: messageId.toString() })
               const newData = c.data.filter((d) => d.id !== messageId)
               return {
                 ...c,

@@ -1,5 +1,6 @@
 import {
   CommentOutlined,
+  ContactsFilled,
   CrownFilled,
   ExperimentFilled,
   FileTextFilled,
@@ -19,6 +20,7 @@ import {
   ShopFilled,
   ShopOutlined,
   SmileFilled,
+  UsergroupAddOutlined,
   WalletFilled
 } from '@ant-design/icons'
 
@@ -40,6 +42,12 @@ const web = [
     name: '商城',
     icon: <ShopOutlined />,
     message: '账户余额和充值套餐记录'
+  },
+  {
+    path: '/user',
+    name: '用户',
+    icon: <UsergroupAddOutlined />,
+    message: '用户信息'
   },
 //  {
 //      path: 'https://github.com/Winston1011/ChatGPT-Web',
@@ -97,7 +105,12 @@ const admin = {
           path: '/admin/signin',
           name: '签到记录',
           icon: <ScheduleFilled />
-        }
+        },
+        {
+          path: '/admin/invite',
+          name: '邀请记录',
+          icon: <ContactsFilled />
+        },
       ]
     },
     {

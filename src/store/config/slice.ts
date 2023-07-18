@@ -20,6 +20,7 @@ export interface ConfigState {
   notifications: Array<NotificationInfo>
   shop_introduce: string
   user_introduce: string
+  invite_introduce: string
   replaceData: (config: { [key: string]: any }) => void
 }
 
@@ -30,6 +31,7 @@ const configStore = create<ConfigState>()(
       notifications: [],
       shop_introduce: '',
       user_introduce: '',
+      invite_introduce: '',
       models: [
         {
           label: 'GPT-3.5',
