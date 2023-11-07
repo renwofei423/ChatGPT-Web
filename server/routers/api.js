@@ -313,6 +313,8 @@ router.post('/images/generations', async (req, res) => {
         return;
     }
     const { data } = (await generations.json());
+    console.log("generations data", data)
+
     if (vipExpireTime < todayTime && !userInfo.is_vip && !userInfo.is_svip) {
         models_1.userModel.updataUserVIP({
             id: user_id,

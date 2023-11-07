@@ -151,9 +151,9 @@ function DrawPage() {
                     setDrawConfig((c) => ({ ...c, size: e.target.value }))
                   }}
                 >
-                  <Radio.Button value={'1024x1024'}>1024x1024</Radio.Button>
-                  <Radio.Button value={'1024x1792'}>1024x1792</Radio.Button>
-                  <Radio.Button value={'1792x1024'}>1792x1024</Radio.Button>
+                  <Radio.Button value={'1024x1024'}>方形</Radio.Button>
+                  <Radio.Button value={'1024x1792'}>纵向</Radio.Button>
+                  <Radio.Button value={'1792x1024'}>横向</Radio.Button>
                 </Radio.Group>
                 <p>图片数量({drawConfig.n}张)</p>
               </Space>
