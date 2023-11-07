@@ -286,7 +286,7 @@ router.post('/images/generations', async (req, res) => {
     today.setHours(0, 0, 0, 0);
     const todayTime = today.getTime();
     const vipExpireTime = new Date(userInfo.vip_expire_time).getTime();
-    const tokenInfo = await models_1.tokenModel.getOneToken({ model: 'dall-e' });
+    const tokenInfo = await models_1.tokenModel.getOneToken({ model: 'dall-e-3' });
     if (!tokenInfo || !tokenInfo.id) {
         res.status(500).json((0, utils_1.httpBody)(-1, '未配置对应模型'));
         return;
@@ -357,7 +357,7 @@ router.post('/chat/completions', async (req, res) => {
     const frequency_penalty = req.body.options?.frequency_penalty;   
     let max_tokens_value = req.body.options?.max_tokens; 
 
-    if (model.includes('gpt-4')) {
+    if (model.includes('gpt-4') && model !== 'gpt-4-32k') {
         max_tokens_value = 4096;
     } else if(model === 'gpt-3.5-trubo' && max_tokens_value >= 2048){
         max_tokens_value = 2048;
