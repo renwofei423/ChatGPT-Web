@@ -297,6 +297,7 @@ router.post('/images/generations', async (req, res) => {
     const generations = await (0, node_fetch_1.default)(`${tokenInfo.host}/v1/images/generations`, {
         method: 'POST',
         body: JSON.stringify({
+            model: "dall-e-3",
             prompt,
             n,
             size,
