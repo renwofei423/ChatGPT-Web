@@ -27,7 +27,7 @@ function DrawPage() {
   const [drawConfig, setDrawConfig] = useState({
     prompt: '',
     n: 1,
-    size: '256x256',
+    size: '1024x1024',
     response_format: 'url'
   })
 
@@ -151,9 +151,9 @@ function DrawPage() {
                     setDrawConfig((c) => ({ ...c, size: e.target.value }))
                   }}
                 >
-                  <Radio.Button value={'256x256'}>256x256</Radio.Button>
-                  <Radio.Button value={'512x512'}>512x512</Radio.Button>
                   <Radio.Button value={'1024x1024'}>1024x1024</Radio.Button>
+                  <Radio.Button value={'1024x1792'}>1024x1792</Radio.Button>
+                  <Radio.Button value={'1792x1024'}>1792x1024</Radio.Button>
                 </Radio.Group>
                 <p>图片数量({drawConfig.n}张)</p>
               </Space>

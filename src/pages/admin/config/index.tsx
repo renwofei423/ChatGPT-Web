@@ -82,16 +82,16 @@ function ConfigPage() {
       const drawUsePriceInitData = {
         draw_use_price: [
           {
-            size: '256x256',
-            integral: 80
-          },
-          {
-            size: '512x512',
-            integral: 90
-          },
-          {
             size: '1024x1024',
-            integral: 100
+            integral: 160
+          },
+          {
+            size: '1024x1792',
+            integral: 200
+          },
+          {
+            size: '1792x1024',
+            integral: 200
           }
         ]
       }
@@ -366,7 +366,7 @@ function ConfigPage() {
         </div>
         <div className={styles.config_form}>
           <h3>绘画积分扣除设置</h3>
-          <p>分为三个规格 256x256 512x512 1024x1024 请分别设置, 如为设置则不扣除积分。</p>
+          <p>分为三个规格 1024x1024 1024x1792 1792x1024 请分别设置, 如为设置则不扣除积分。</p>
           <ProForm
             form={drawUsePriceForm}
             onFinish={(values) => {

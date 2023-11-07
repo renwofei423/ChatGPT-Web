@@ -262,7 +262,7 @@ router.post('/images/generations', async (req, res) => {
         res.status(500).json((0, utils_1.httpBody)(-1, '服务端错误'));
         return;
     }
-    const { prompt, n = 1, size = '256x256', response_format = 'url' } = req.body;
+    const { prompt, n = 1, size = '1024x1024', response_format = 'url' } = req.body;
     const userInfo = await models_1.userModel.getUserInfo({
         id: user_id
     });
