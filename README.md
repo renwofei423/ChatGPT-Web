@@ -81,6 +81,7 @@ yarn start
 **环境变量**
 
 ```
+在根目录的.env.devlopment文件中更改前端指向路由地址：
 后端地址
 VITE_APP_REQUEST_HOST: https://xxx.xxx.xxx
 
