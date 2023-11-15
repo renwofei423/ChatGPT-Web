@@ -2,7 +2,7 @@ import { getAdminMessages } from '@/request/adminApi';
 import { MessageInfo } from '@/types/admin';
 import { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { Button, Col, DatePicker, Form, Input, InputNumber, Row, Space, Tag } from 'antd';
+import { Button, Col, DatePicker, Form, Input, InputNumber, Row, Select, Space, Tag } from 'antd';
 import { useRef} from 'react';
 
 function MessagePage() {
@@ -87,6 +87,23 @@ function MessagePage() {
               />
             </Form.Item>
           </Col>
+          <Col>
+            <Form.Item name="modelName" label="模型">
+                <Select placeholder="选择模型名称"
+                mode="multiple"
+                allowClear
+                style={{ width: '200px' }}
+                popupMatchSelectWidth={false}
+                >
+                <Select.Option value="gpt-3.5-turbo">gpt-3.5-turbo</Select.Option>
+                <Select.Option value="gpt-3.5-turbo-16k">gpt-3.5-turbo-16k</Select.Option>
+                <Select.Option value="gpt-3.5-turbo-16k-0613">gpt-3.5-turbo-16k-0613</Select.Option>
+                <Select.Option value="gpt-4">gpt-4</Select.Option>
+                <Select.Option value="gpt-4-0613">gpt-4-0613</Select.Option>
+                <Select.Option value="gpt-4-32k">gpt-4-32k</Select.Option>
+                </Select>
+            </Form.Item>
+          </Col>
 
           <Col>
             <Form.Item>
@@ -113,6 +130,7 @@ function MessagePage() {
                         page_size: params.pageSize || 10
                     }
 
+                    console.log('queryParams.modelName', queryParams.modelName)
                     // 表单搜索项会从 params 传入，传递给后端接口。
                     const res = await getAdminMessages({
                         page: queryParams.page || 1,
@@ -124,6 +142,7 @@ function MessagePage() {
                         createTimeEnd: (queryParams.createTimeRange !== undefined && queryParams.createTimeRange !== null ) ? 
                             `${queryParams.createTimeRange[1].$y}-${queryParams.createTimeRange[1].$M + 1}-${queryParams.createTimeRange[1].$D}`
                             : '',
+                        modelName: (queryParams.modelName !== undefined)? queryParams.modelName:[],
                     });
                     return Promise.resolve({
                         data: res.data.rows,

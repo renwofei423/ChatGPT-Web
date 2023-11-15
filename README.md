@@ -12,8 +12,12 @@
 - 管理账号：admin@gmail.com
 - 管理密码：admin123456
 
-如需帮助请提交 [Issues](https://github.com/Winston1011/ChatGPT-Web/issues) 时留下联系方式。
+如需帮助请提交 [Issues](https://github.com/Winston1011/ChatGPT-Web/issues) .
+或者添加个人微信：Winston110150
+![Alt text](image.png)
 
+欢迎大家打赏！（支付宝&微信均可）
+![img_1.png](img_1.png)
 ### 页面截图
 
 ![页面截图1](https://files.catbox.moe/tp963e.png)
@@ -38,20 +42,6 @@
 - 数据库: MYSQL + Redis
 - 两个域名: 一个用作前端，一个用作后端跳转
 
-## 前端
-
-
-**环境变量**
-
-```
-后端地址
-VITE_APP_REQUEST_HOST: https://xxx.xxx.xxx
-
-APP 名称&Logo
-VITE_APP_TITLE: ChatWeb
-VITE_APP_LOGO: https://image.lightai.io/icon/logo.svg
-```
-
 
 ### 服务器部署
 
@@ -64,10 +54,6 @@ cd ChatGpt-Web
 以及 yarn）
 yarn install
 
-## 打包
-yarn build
-
-将打包好的 dist 目录上传到服务器，将网站目录指向 dist 文件夹即可
 ```
 
 需额外在伪静态中添加
@@ -85,17 +71,32 @@ location / {
 在 `server/config/index.js` 中修改 `后端端口` `数据库` `邮箱` 等配置
 
 ```
-##安装 pm2 管理器
-sudo npm install pm2 -g
-
-cd server
-
-#### 启动进程
-pm2 start index.js --name chatweb --watch
+## 在根目录下
+yarn start
 ```
 新建一个网站，ssl验证后，反向代理 `http://127.0.0.1:3200`(可在后端配置中自行修改端口)
 
+## 前端
+
+**环境变量**
+
+```
+在根目录的.env.devlopment文件中更改前端指向路由地址：
+后端地址
+VITE_APP_REQUEST_HOST: https://xxx.xxx.xxx
+
+APP 名称&Logo
+VITE_APP_TITLE: ChatWeb
+VITE_APP_LOGO: https://image.lightai.io/icon/logo.svg
+
+## 在根目录下启动
+yarn dev
+```
+
+
 ## 更多
+
+以上部署均为前台部署，若需要后台部署，用宝塔面板的Node添加即可
 
 关于 `node` `yarn` `pm2` 以及 Vercle 的一些设置可以自行搜索或向[GPT](https://chat.nonezero.top) 提问
 

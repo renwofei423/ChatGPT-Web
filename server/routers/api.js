@@ -77,13 +77,32 @@ router.get('/send_sms', async (req, res) => {
 // 登陆注册
 router.post('/login', async (req, res) => {
     const { account, code, password } = req.body;
+    let { invite_code } = req.body
+    if(invite_code === ''){
+        invite_code = 'winstondz'
+    }
     const ip = (0, utils_1.getClientIP)(req);
     if (!account || (!code && !password)) {
         res.status(406).json((0, utils_1.httpBody)(-1, '缺少必要参数'));
         return;
     }
     let userInfo = await models_1.userModel.getUserInfo({ account });
-    if (account && code) {
+    let md5Password = '';
+    // 密码+验证码注册&登录
+    if(account && code && password){
+        const redisCode = await redis_1.default.select(0).get(`code:${account}`);
+        md5Password = (0, utils_1.generateMd5)(password);
+        if (!redisCode) {
+            res.status(406).json((0, utils_1.httpBody)(-1, '请先发送验证码'));
+            return;
+        }
+        if (code !== redisCode) {
+            res.status(406).json((0, utils_1.httpBody)(-1, '验证码不正确'));
+            return;
+        }
+        await redis_1.default.select(0).del(`code:${account}`);
+    }
+    else if (account && code) {
         const redisCode = await redis_1.default.select(0).get(`code:${account}`);
         if (!redisCode) {
             res.status(406).json((0, utils_1.httpBody)(-1, '请先发送验证码'));
@@ -96,7 +115,7 @@ router.post('/login', async (req, res) => {
         await redis_1.default.select(0).del(`code:${account}`);
     }
     else if (account && password) {
-        const md5Password = (0, utils_1.generateMd5)(password);
+        md5Password = (0, utils_1.generateMd5)(password);
         if (!userInfo) {
             res.status(406).json((0, utils_1.httpBody)(-1, '用户不存在'));
             return;
@@ -120,11 +139,12 @@ router.post('/login', async (req, res) => {
                     id,
                     account,
                     ip,
+                    invite_code,
                     nickname: '',
                     avatar: 'https://image.lightai.io/icon/header.png',
                     status: 1,
                     role: 'user',
-                    password: (0, utils_1.generateMd5)((0, utils_1.generateMd5)((0, utils_1.generateUUID)() + Date.now().toString())),
+                    password: md5Password ?? (0, utils_1.generateMd5)((0, utils_1.generateMd5)((0, utils_1.generateUUID)() + Date.now().toString())),
                     integral: Number(register_reward),
                     vip_expire_time: (0, utils_2.formatTime)('yyyy-MM-dd', yesterday),
                     svip_expire_time: (0, utils_2.formatTime)('yyyy-MM-dd', yesterday)
@@ -242,7 +262,7 @@ router.post('/images/generations', async (req, res) => {
         res.status(500).json((0, utils_1.httpBody)(-1, '服务端错误'));
         return;
     }
-    const { prompt, n = 1, size = '256x256', response_format = 'url' } = req.body;
+    const { prompt, n = 1, size = '1024x1024', response_format = 'url' } = req.body;
     const userInfo = await models_1.userModel.getUserInfo({
         id: user_id
     });
@@ -266,7 +286,7 @@ router.post('/images/generations', async (req, res) => {
     today.setHours(0, 0, 0, 0);
     const todayTime = today.getTime();
     const vipExpireTime = new Date(userInfo.vip_expire_time).getTime();
-    const tokenInfo = await models_1.tokenModel.getOneToken({ model: 'dall-e' });
+    const tokenInfo = await models_1.tokenModel.getOneToken({ model: 'dall-e-3' });
     if (!tokenInfo || !tokenInfo.id) {
         res.status(500).json((0, utils_1.httpBody)(-1, '未配置对应模型'));
         return;
@@ -277,6 +297,7 @@ router.post('/images/generations', async (req, res) => {
     const generations = await (0, node_fetch_1.default)(`${tokenInfo.host}/v1/images/generations`, {
         method: 'POST',
         body: JSON.stringify({
+            model: "dall-e-3",
             prompt,
             n,
             size,
@@ -292,6 +313,8 @@ router.post('/images/generations', async (req, res) => {
         return;
     }
     const { data } = (await generations.json());
+    console.log("generations data", data)
+
     if (vipExpireTime < todayTime && !userInfo.is_vip && !userInfo.is_svip) {
         models_1.userModel.updataUserVIP({
             id: user_id,
@@ -337,7 +360,7 @@ router.post('/chat/completions', async (req, res) => {
     const frequency_penalty = req.body.options?.frequency_penalty;
     let max_tokens_value = req.body.options?.max_tokens;
 
-    if (model.includes('gpt-4')) {
+    if (model.includes('gpt-4') && model !== 'gpt-4-32k') {
         max_tokens_value = 4096;
     } else if(model === 'gpt-3.5-trubo' && max_tokens_value >= 2048){
         max_tokens_value = 2048;
@@ -527,10 +550,12 @@ router.post('/chat/completions', async (req, res) => {
         const ai3_ratio = (await models_1.configModel.getKeyConfig('ai3_ratio')).value || 0;
         const ai3_16k_ratio = (await models_1.configModel.getKeyConfig('ai3_16k_ratio')).value || 0;
         const ai4_ratio = (await models_1.configModel.getKeyConfig('ai4_ratio')).value || 0;
+        const ai4_32k_ratio = (await models_1.configModel.getKeyConfig('ai4_32k_ratio')).value || 0;
         const aiRatioInfo = {
             ai3_ratio,
             ai3_16k_ratio,
-            ai4_ratio
+            ai4_ratio,
+            ai4_32k_ratio
         };
         // 重试的时候 删除此前消息
         if(oldUserMessageId === ''){
@@ -567,7 +592,10 @@ router.post('/chat/completions', async (req, res) => {
                             if (!isFeeCalculated) {
                                 if (options.model.includes('gpt-4') && svipExpireTime < todayTime) {
                                     // GPT-4 非 SVIP 用户扣费逻辑，这里不再计算 tokens，直接扣除固定的 ratio
-                                    const ratio = Number(aiRatioInfo.ai4_ratio);
+                                    let ratio = Number(aiRatioInfo.ai4_ratio);
+                                    if(options.model.includes('32k')){
+                                        ratio = Number(aiRatioInfo.ai4_32k_ratio);
+                                    }
                                     models_1.userModel.updataUserVIP({
                                         id: user_id,
                                         type: 'integral',
@@ -584,7 +612,7 @@ router.post('/chat/completions', async (req, res) => {
                                 } else if (options.model.includes('gpt-3') && vipExpireTime < todayTime && svipExpireTime < todayTime) {
                                     // GPT-3 非 VIP 或 SVIP 用户扣费逻辑，这里不再计算 tokens，直接扣除固定的 ratio
                                     let ratio = Number(aiRatioInfo.ai3_ratio);
-                                    if(options.model === 'gpt-3.5-turbo-16k'){
+                                    if(options.model.includes('16k')){
                                         ratio = Number(aiRatioInfo.ai3_16k_ratio);
                                     }
                                     models_1.userModel.updataUserVIP({
@@ -623,7 +651,10 @@ router.post('/chat/completions', async (req, res) => {
                                 // 扣除相关
                                 if (options.model.includes('gpt-4') && svipExpireTime < todayTime) {
                                     // GPT-4 非 SVIP 用户扣费逻辑，这里不再计算 tokens，直接扣除固定的 ratio
-                                    const ratio = Number(aiRatioInfo.ai4_ratio);
+                                    let ratio = Number(aiRatioInfo.ai4_ratio);
+                                    if(options.model.includes('32k')){
+                                        ratio = Number(aiRatioInfo.ai4_32k_ratio);
+                                    }
                                     models_1.userModel.updataUserVIP({
                                         id: user_id,
                                         type: 'integral',
@@ -640,7 +671,7 @@ router.post('/chat/completions', async (req, res) => {
                                 } else if (options.model.includes('gpt-3') && vipExpireTime < todayTime && svipExpireTime < todayTime) {
                                     // GPT-3 非 VIP 或 SVIP 用户扣费逻辑，这里不再计算 tokens，直接扣除固定的 ratio
                                     let ratio = Number(aiRatioInfo.ai3_ratio);
-                                    if(options.model === 'gpt-3.5-turbo-16k'){
+                                    if(options.model.includes('16k')){
                                         ratio = Number(aiRatioInfo.ai3_16k_ratio);
                                     }
                                     models_1.userModel.updataUserVIP({

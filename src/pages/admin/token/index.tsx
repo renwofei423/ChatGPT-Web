@@ -11,6 +11,10 @@ const modelsAll = [
         value: 'gpt-4'
     },
     {
+        label: 'gpt-4-0613',
+        value: 'gpt-4-0613'
+    },
+    {
         label: 'gpt-4-32k',
         value: 'gpt-4-32k'
     },
@@ -23,8 +27,12 @@ const modelsAll = [
         value: 'gpt-3.5-turbo-16k'
     },
     {
-        label: 'DALL·E绘画',
-        value: 'dall-e'
+        label: 'gpt-3.5-turbo-16k-0613',
+        value: 'gpt-3.5-turbo-16k-0613'
+    },
+    {
+        label: 'DALL·E3绘画',
+        value: 'dall-e-3'
     }
 ]
 

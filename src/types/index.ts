@@ -36,9 +36,9 @@ export interface ResponseConfigData {
 
 export interface ChatGptConfig {
   // api
-  // api: string
+  api?: string
   // api-key
-  // api_key?: string
+  api_key?: string
   // 模型
   model: string
   // 输出随机性 0 - 2

@@ -13,7 +13,7 @@ export interface DrawState {
 
 const drawStore = create<DrawState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       historyDrawImages: [],
       clearhistoryDrawImages: () => set({ historyDrawImages: [] }),
       addDrawImage: (images) =>

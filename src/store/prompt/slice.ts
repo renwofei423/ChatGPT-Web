@@ -18,7 +18,7 @@ export interface PromptState {
 
 const promptStore = create<PromptState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       localPrompt: [...promptszh],
       addPrompts: (list) =>
         set((state: PromptState) => {

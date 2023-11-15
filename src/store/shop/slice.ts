@@ -15,7 +15,7 @@ export interface shopState {
 
 const shopStore = create<shopState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       payTypes: [],
       changePayTypes: (list) => set({ payTypes: list }),
       goodsList: [],

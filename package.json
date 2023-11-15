@@ -50,7 +50,9 @@
     "sequelize": "^6.31.1",
     "ts-node-dev": "^2.0.0",
     "tslib": "^2.5.1",
-    "zustand": "^4.3.7"
+    "zustand": "^4.3.7",
+    "@react-buddy/ide-toolbox": "^2.4.0",
+    "@react-buddy/palette-antd": "^5.3.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.6.1",

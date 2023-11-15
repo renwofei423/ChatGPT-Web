@@ -21,7 +21,7 @@ export interface userState {
 
 const userStore = create<userState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       loginModal: false,
       loadingModal: false,
       user_info: undefined,

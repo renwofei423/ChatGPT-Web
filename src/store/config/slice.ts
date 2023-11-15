@@ -26,7 +26,7 @@ export interface ConfigState {
 
 const configStore = create<ConfigState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       configModal: false,
       notifications: [],
       shop_introduce: '',
@@ -42,8 +42,16 @@ const configStore = create<ConfigState>()(
           value: 'gpt-3.5-turbo-16k'
         },
         {
+          label: 'GPT-3.5-turbo-16k-0613',
+          value: 'gpt-3.5-turbo-16k-0613'
+        },
+        {
           label: 'GPT-4',
           value: 'gpt-4'
+        },
+        {
+          label: 'GPT-4-0613',
+          value: 'gpt-4-0613'
         },
         {
           label: 'GPT-4-32K',
@@ -55,7 +63,7 @@ const configStore = create<ConfigState>()(
         temperature: 0,
         presence_penalty: 0,
         frequency_penalty: 0,
-        max_tokens: 2000
+        max_tokens: 1500
       },
       setConfigModal: (value) => set({ configModal: value }),
       changeConfig: (config) =>

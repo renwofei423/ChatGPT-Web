@@ -9,6 +9,7 @@ export interface GetMessageParam {
   account?: string,
   createTimeStart?: string,
   createTimeEnd?: string,
+  modelName?: Array<string>,
 }
 
 export interface GetUserParam {
